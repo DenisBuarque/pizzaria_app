@@ -1,11 +1,10 @@
-import prismaClient from "../../prisma"
-;
+import prismaClient from "../../prisma";
+import bcryptjs from "bcryptjs";
+
 interface UserRequest {
     name: string;
-    phone: string;
     email: string;
     password: string;
-
 }
 
 class UserService {
@@ -13,10 +12,6 @@ class UserService {
 
         if(!data.name) {
             throw new Error("Adicione seu nome!");
-        }
-
-        if(!data.phone) {
-            throw new Error("Adicione seu telefone!");
         }
 
         if(!data.email) {
@@ -31,6 +26,11 @@ class UserService {
         if(existEmail){
             throw new Error('E-mail já existe');
         }
+
+        const salt = bcryptjs.genSaltSync(10);
+        const hashPassord = bcryptjs.hashSync(data.password, salt);
+
+        data.password = hashPassord;
 
         const newUser = await prismaClient.user.create({
             data,
